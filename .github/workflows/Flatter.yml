@@ -1,0 +1,45 @@
+name: Flatter (Deploy)
+
+on:
+  push:
+    branches: [published]
+  workflow_dispatch:
+
+jobs:
+  flatter:
+    name: Flatter
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.5
+      options: --privileged
+    permissions:
+      contents: write
+    steps:
+    
+      - name: Download static rsync (x86_64)
+        run: |
+          wget -nv https://github.com/jbruechert/rsync-static/releases/download/continuous/rsync-x86
+          chmod +x rsync-x86
+          mv rsync-x86 /usr/bin/rsync
+    
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Build
+        id: flatpak
+        uses: andyholmes/flatter@main
+        with:
+          files: |
+            io.github.juzzlin.Noteahead.yml
+
+      - name: Debug Flatter Output
+        run: |
+          echo "Repository output: ${{ steps.flatpak.outputs.repository }}"
+          ls -l ${{ steps.flatpak.outputs.repository }} || echo "Directory does not exist"
+    
+      - name: Deploy Repository
+        uses: JamesIves/github-pages-deploy-action@v4.7.3
+        with:
+          folder: ${{ steps.flatpak.outputs.repository }}
+          target-folder: flatpak
+          branch: gh-pages
