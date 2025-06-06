@@ -31,12 +31,6 @@ jobs:
       - name: Clean flatpak output directories (for local runs)
         run: rm -rf flatpak/
 
-      - name: Clean previous Flatpak repository outputs
-        run: |
-          if [ -n "${{ steps.flatpak.outputs.repository }}" ]; then
-            echo "Cleaning previous Flatpak repository output..."
-            rm -rf "${{ steps.flatpak.outputs.repository }}"
-          fi
 
       - name: Build
         id: flatpak
@@ -76,4 +70,4 @@ jobs:
           folder: flatpak
           target-folder: flatpak
           branch: gh-pages
-          clean: false
+          clean: true  
